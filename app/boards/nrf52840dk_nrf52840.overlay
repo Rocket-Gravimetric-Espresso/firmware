@@ -1,0 +1,16 @@
+
+/ {
+	interrupt-pins {
+		compatible = "gpio-keys";
+		touch0: touch_0 {
+			gpios = <&gpio0 6 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+			label = "Interrupt PIN for touch";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	aliases {
+		touch = &touch0;
+	};
+};
+

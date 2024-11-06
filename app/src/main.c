@@ -13,9 +13,9 @@
 LOG_MODULE_REGISTER(rocket, LOG_LEVEL_INF);
 
 #ifdef CONFIG_GPIO
-static struct gpio_dt_spec button_gpio =
-    GPIO_DT_SPEC_GET_OR(DT_ALIAS(sw0), gpios, {0});
-static struct gpio_callback button_callback;
+static struct gpio_dt_spec touch_interrupt_gpio =
+    GPIO_DT_SPEC_GET_OR(DT_ALIAS(touch), gpios, {0});
+static struct gpio_callback touch_callback;
 
 static void button_isr_callback(const struct device *port,
                                 struct gpio_callback *cb, uint32_t pins) {
@@ -34,40 +34,42 @@ int main(void) {
     }
 
 #ifdef CONFIG_GPIO
-    if (gpio_is_ready_dt(&button_gpio)) {
+    if (gpio_is_ready_dt(&touch_interrupt_gpio)) {
         int err;
 
-        err = gpio_pin_configure_dt(&button_gpio, GPIO_INPUT);
+        err = gpio_pin_configure_dt(&touch_interrupt_gpio, GPIO_INPUT);
         if (err) {
-            LOG_ERR("failed to configure button gpio: %d", err);
+            LOG_ERR("Failed to configure gpio for interrupt: %d", err);
             return 0;
         }
 
-        gpio_init_callback(&button_callback, button_isr_callback,
-                           BIT(button_gpio.pin));
+        gpio_init_callback(&touch_callback, button_isr_callback,
+                           BIT(touch_interrupt_gpio.pin));
 
-        err = gpio_add_callback(button_gpio.port, &button_callback);
+        err = gpio_add_callback(touch_interrupt_gpio.port, &touch_callback);
         if (err) {
-            LOG_ERR("failed to add button callback: %d", err);
+            LOG_ERR("Failed to add touch interrupt callback: %d", err);
             return 0;
         }
-
-        err = gpio_pin_interrupt_configure_dt(&button_gpio,
-                                              GPIO_INT_EDGE_TO_ACTIVE);
+        err = gpio_pin_interrupt_configure_dt(&touch_interrupt_gpio,
+                                              GPIO_INT_DISABLE);
         if (err) {
-            LOG_ERR("failed to enable button callback: %d", err);
+            LOG_ERR("Failed to enable touch interrupt callback: %d", err);
             return 0;
         }
     }
 #endif /* CONFIG_GPIO */
 
+    show_main_screen();
     lv_task_handler();
     display_blanking_off(display_dev);
-
-    show_main_screen();
+    int res;
 
     while (1) {
         lv_task_handler();
         k_sleep(K_MSEC(10));
+        res = gpio_pin_get_raw(touch_interrupt_gpio.port,
+                               touch_interrupt_gpio.pin);
+        // LOG_INF("GPIO level: %d", res);
     }
 }
