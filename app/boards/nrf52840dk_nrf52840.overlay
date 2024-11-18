@@ -1,16 +1,30 @@
 
 / {
-	interrupt-pins {
-		compatible = "gpio-keys";
-		touch0: touch_0 {
-			gpios = <&gpio0 6 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
-			label = "Interrupt PIN for touch";
-			zephyr,code = <INPUT_KEY_0>;
-		};
-	};
+    interrupt-pins {
+        compatible = "gpio-keys";
+        touch0: touch_0 {
+            gpios = <&gpio0 6 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+            label = "Interrupt PIN for touch";
+            zephyr,code = <INPUT_KEY_0>;
+        };
+    };
 
-	aliases {
-		touch = &touch0;
-	};
+    aliases {
+        touch = &touch0;
+    };
 };
 
+&i2c1 {
+    status = "okay";
+    nau7802: nau7802_loadcell@2A {
+        compatible = "nuvoton,nau7802_loadcell";
+        reg = <0x2A>;
+        drdy-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+        conversions-per-second = <320>; //SPS
+        gain = <64>;
+    };
+};
+
+&spi1 {
+    status = "disabled";
+};

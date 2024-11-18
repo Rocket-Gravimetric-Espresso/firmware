@@ -15,3 +15,7 @@ manifest:
       repo-path: sdk-nrf
       revision: v2.7.0
       import: true
+    - name: NAU7802_LOADCELL
+      path: modules/nau7802_loadcell
+      revision: main
+      url: https://github.com/TinNotTim/nau7802_loadcell_zephyr_driver
