@@ -1,0 +1,204 @@
+/*
+ * Copyright (c) 2022 Marcin Niestroj
+ * Copyright (c) 2022 Peter Johanson
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <nordic/nrf52840_qiaa.dtsi>
+#include "xiao_custom_pcb-pinctrl.dtsi"
+
+/ {
+	chosen {
+		zephyr,console = &usb_cdc_acm_uart;
+		zephyr,shell-uart = &usb_cdc_acm_uart;
+		zephyr,uart-mcumgr = &usb_cdc_acm_uart;
+		zephyr,bt-mon-uart = &usb_cdc_acm_uart;
+		zephyr,bt-c2h-uart = &usb_cdc_acm_uart;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &code_partition;
+		zephyr,ieee802154 = &ieee802154;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
+			label = "Red LED";
+		};
+		led1: led_1 {
+			gpios = <&gpio0 30 GPIO_ACTIVE_LOW>;
+			label = "Green LED";
+		};
+		led2: led_2 {
+			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+			label = "Blue LED";
+		};
+	};
+
+	arduino_header: connector {
+		#compatible = "arduino-header-r3";
+    compatible = "seeed,xiao-gpio";
+		#gpio-cells = <2>;
+		gpio-map-mask = <0xffffffff 0xffffffc0>;
+		gpio-map-pass-thru = <0 0x3f>;
+		gpio-map =
+			   <0 0 &gpio0 2 0>, /* D0 */
+			   <1 0 &gpio0 3 0>, /* D1 */
+			   <2 0 &gpio0 28 0>, /* D2 */
+			   <3 0 &gpio0 29 0>, /* D3 */
+			   <4 0 &gpio0 4 0>, /* D4 */
+			   <5 0 &gpio0 5 0>, /* D5 */
+			   <6 0 &gpio1 11 0>, /* D6 */
+			   <7 0 &gpio1 12 0>, /* D7 */
+			   <8 0 &gpio1 13 0>, /* D8 */
+			   <9 0 &gpio1 14 0>, /* D9 */
+			   <10 0 &gpio1 15 0>, /* D10 */
+         /* Fix this hack */
+         <11 0 &gpio0 8 0>,
+         <15 0 &gpio0 8 0>,
+         <16 0 &gpio0 8 0>;
+	};
+
+	adafruit_2_8_tft_touch_v2_mipi_dbi {
+		dc-gpios = <&gpio1 6 GPIO_ACTIVE_HIGH>;
+	};
+
+	/* These aliases are provided for compatibility with samples */
+	aliases {
+		led0 = &led0;
+		led1 = &led1;
+		led2 = &led2;
+		bootloader-led0 = &led0;
+		mcuboot-led0 = &led0;
+		watchdog0 = &wdt0;
+		spi-flash0 = &p25q16h;
+	};
+};
+
+&uicr {
+	gpio-as-nreset;
+};
+
+&gpiote {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+xiao_serial: &uart0 {
+	compatible = "nordic,nrf-uarte";
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+arduino_i2c: &i2c0 {
+	compatible = "nordic,nrf-twi";
+	status = "okay";
+	pinctrl-0 = <&i2c0_default>;
+	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-names = "default", "sleep";
+
+  nau7802: nau7802_loadcell@2A {
+    compatible = "nuvoton,nau7802_loadcell";
+    reg = <0x2A>;
+    drdy-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+    conversions-per-second = <320>; //SPS
+    gain = <64>;
+  };
+
+	ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
+		/* Uncomment if IRQ line is available (requires to solder jumper) */
+		int-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+	};
+};
+
+arduino_spi: &spi3 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	cs-gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&spi3_default>;
+	pinctrl-1 = <&spi3_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&qspi {
+	status = "okay";
+	pinctrl-0 = <&qspi_default>;
+	pinctrl-1 = <&qspi_sleep>;
+	pinctrl-names = "default", "sleep";
+	p25q16h: p25q16h@0 {
+		compatible = "nordic,qspi-nor";
+		reg = <0>;
+		sck-frequency = <104000000>;
+		quad-enable-requirements = "S2B1v1";
+		jedec-id = [85 60 15];
+		sfdp-bfp = [
+			e5 20 f1 ff  ff ff ff 00  44 eb 08 6b  08 3b 80 bb
+			ee ff ff ff  ff ff 00 ff  ff ff 00 ff  0c 20 0f 52
+			10 d8 08 81
+		];
+		size = <16777216>;
+		has-dpd;
+		t-enter-dpd = <3000>;
+		t-exit-dpd = <8000>;
+	};
+};
+
+&ieee802154 {
+	status = "okay";
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		sd_partition: partition@0 {
+			label = "softdevice";
+			reg = <0x00000000 0x00027000>;
+		};
+
+		code_partition: partition@27000 {
+			label = "code_partition";
+			reg = <0x00027000 0x000c5000>;
+		};
+
+		/*
+		 * The flash starting at 0x000ec000 and ending at
+		 * 0x000f3fff is reserved for use by the application.
+		 *
+		 * Storage partition will be used by FCB/LittleFS/NVS
+		 * if enabled.
+		 */
+		storage_partition: partition@ec000 {
+			label = "storage";
+			reg = <0x000ec000 0x00008000>;
+		};
+
+		boot_partition: partition@f4000 {
+			label = "adafruit_boot";
+			reg = <0x000f4000 0x0000c000>;
+		};
+	};
+};
+
+zephyr_udc0: &usbd {
+	compatible = "nordic,nrf-usbd";
+	status = "okay";
+
+	usb_cdc_acm_uart: cdc-acm-uart {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};

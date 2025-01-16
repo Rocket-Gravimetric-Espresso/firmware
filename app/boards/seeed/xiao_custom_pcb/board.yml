@@ -1,0 +1,7 @@
+board:
+  name: xiao_custom_pcb
+  vendor: seeed
+  socs:
+  - name: nrf52840
+    variants:
+    - name: 'sense'
