@@ -1,30 +1,47 @@
-
 / {
     interrupt-pins {
         compatible = "gpio-keys";
-        touch0: touch_0 {
-            gpios = <&gpio0 6 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+        touch_irq: touch_irq {
+            gpios = <&gpio1 8 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
             label = "Interrupt PIN for touch";
             zephyr,code = <INPUT_KEY_0>;
         };
     };
 
-    aliases {
-        touch = &touch0;
+    leds {
+        compatible = "gpio-leds";
+        led4: led4 {
+            gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+        };
+    };
+
+    control-pins {
+        compatible = "gpio-leds";
+        power_sw: tck108af {
+            gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+        };
     };
 };
 
-&i2c1 {
+&i2c0 {
     status = "okay";
-    nau7802: nau7802_loadcell@2A {
+    nau7802: nau7802_loadcell@2a {
         compatible = "nuvoton,nau7802_loadcell";
         reg = <0x2A>;
         drdy-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
-        conversions-per-second = <320>; //SPS
-        gain = <64>;
+        conversions-per-second = <40>;
+        gain = <16>;
     };
 };
 
 &spi1 {
     status = "disabled";
+};
+
+&arduino_i2c {
+        ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
+        compatible = "focaltech,ft5336";
+        reg = <0x38>;
+        int-gpios = <&arduino_header 13 GPIO_ACTIVE_LOW>;
+    };
 };
