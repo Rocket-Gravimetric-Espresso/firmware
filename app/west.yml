@@ -13,7 +13,7 @@ manifest:
     - name: nrf
       remote: ncs
       repo-path: sdk-nrf
-      revision: v2.7.0
+      revision: v2.9.0
       import: true
     - name: NAU7802_LOADCELL
       path: modules/nau7802_loadcell
