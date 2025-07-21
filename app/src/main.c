@@ -1,8 +1,5 @@
-#include "../../../modules/nau7802_loadcell/drivers/sensor/nau7802_loadcell/nau7802_loadcell.h"
 #include "lv_api_map.h"
 #include "lvgl/lv_ui.h"
-#include "syscalls/sensor.h"
-#include "zephyr/drivers/sensor.h"
 #include <lvgl.h>
 #include <lvgl_input_device.h>
 #include <string.h>
@@ -13,44 +10,16 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include "brew_thread.h"
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
-#define LED4_NODE     DT_NODELABEL(led4)
-#define TOUCH_NODE    DT_NODELABEL(touch_irq)
-#define POWER_SW_NODE DT_NODELABEL(power_sw)
-
-#define CALIBRATION_FACTOR 0.002877658408
-#define ZERO_OFFFSET	   0.0
+#define TOUCH_NODE DT_NODELABEL(touch_irq)
 
 /* Touch Interrupt */
 static struct gpio_dt_spec touch_irq =
 	GPIO_DT_SPEC_GET_OR(TOUCH_NODE, gpios, {0});
 static struct gpio_callback touch_callback;
-
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED4_NODE, gpios);
-static const struct gpio_dt_spec power_sw =
-	GPIO_DT_SPEC_GET(POWER_SW_NODE, gpios);
-
-static double process_sensor_value(const struct device *dev)
-{
-	struct sensor_value force;
-	int ret;
-
-	ret = sensor_sample_fetch(dev);
-	if (ret != 0) {
-		LOG_ERR("ret: %d, Sensor sample update error", ret);
-		return ret;
-	}
-
-	ret = sensor_channel_get(dev, SENSOR_CHAN_FORCE, &force);
-	if (ret != 0) {
-		LOG_ERR("ret: %d, Cannot read NAU7802 force channel.", ret);
-		return ret;
-	}
-
-	return sensor_value_to_double(&force);
-}
 
 static void touch_isr_callback(const struct device *port,
 			       struct gpio_callback *cb, uint32_t pins)
@@ -68,13 +37,6 @@ int main(void)
 	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
 		LOG_ERR("Device %s is not ready. Exiting..", display_dev->name);
-		return 0;
-	}
-
-	const struct device *const adc_dev =
-		DEVICE_DT_GET(DT_NODELABEL(nau7802));
-	if (!device_is_ready(adc_dev)) {
-		LOG_ERR("Device %s is not ready. Exiting..", adc_dev->name);
 		return 0;
 	}
 
@@ -124,13 +86,7 @@ int main(void)
 	  interrupt callback: %d", err); return 0;
 	      }
 	  }
-      */
-
-	/* Initialize Load switch */
-	if (gpio_is_ready_dt(&power_sw)) {
-		int err;
-		err = gpio_pin_configure_dt(&power_sw, GPIO_OUTPUT_ACTIVE);
-	}
+	  */
 
 	/* Initialize LVGL */
 	lv_ui_init();
@@ -138,20 +94,14 @@ int main(void)
 	k_msleep(100);
 	display_blanking_off(display_dev);
 
-	/* Set zero offset */
-	double zero_offset = process_sensor_value(adc_dev);
-	LOG_INF("Zero Offset: %d", zero_offset);
+	brew_thread_start();
 
 	while (1) {
 		// LVGL test
 		lv_task_handler();
 		// ADC test
-		double ret = process_sensor_value(adc_dev);
-		// LOG_INF("%f, %f", ret, CALIBRATION_FACTOR * (ret -
-		// zero_offset)
-		// - 4.0);
 		// Load switch test
-		gpio_pin_toggle_dt(&power_sw);
+		// gpio_pin_toggle_dt(&power_sw);
 		// Sleep
 		k_msleep(10);
 	}

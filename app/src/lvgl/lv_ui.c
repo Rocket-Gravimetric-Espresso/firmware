@@ -12,6 +12,7 @@
 #include "widgets/lv_label.h"
 #include "zephyr/logging/log.h"
 #include "zephyr/toolchain.h"
+#include "zephyr/random/random.h"
 #include <lvgl.h>
 
 LOG_MODULE_REGISTER(ui, LOG_LEVEL_INF);
@@ -143,7 +144,7 @@ static void lv_ui_home_init(void)
 	lv_obj_align(label_button, LV_ALIGN_CENTER, 0, 0);
 
 	lv_obj_t *joke = lv_label_create(view_home);
-	lv_label_set_text(joke, bad_jokes[2]);
+	lv_label_set_text(joke, bad_jokes[sys_rand8_get() % 7]);
 	lv_obj_set_style_text_color(joke, lv_color_white(), 0);
 	lv_obj_align(joke, LV_ALIGN_BOTTOM_MID, 0, 0);
 
