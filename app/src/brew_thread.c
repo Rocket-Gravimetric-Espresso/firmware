@@ -117,6 +117,28 @@ void brew_thread_start(void)
 		// return 0;
 	}
 
+	// TODO: ADC calibration
+	/*
+	  float32_t zero_offset = ZERO_OFFFSET;
+	  float32_t calib_factor = CALIBRATION_FACTOR;
+	  const struct sensor_value offset_attri;
+	  const struct sensor_value calib_attri;
+
+	  memcpy(&offset_attri.val1, &zero_offset, sizeof(zero_offset));
+	  memcpy(&calib_attri.val1, &calib_factor, sizeof(calib_factor));
+
+	  if (sensor_attr_set(adc_dev, SENSOR_CHAN_FORCE, SENSOR_ATTR_OFFSET,
+			      &offset_attri) != 0) {
+	      LOG_ERR("Cannot configure the offset.");
+	      return 0;
+	  }
+
+	  if (sensor_attr_set(adc_dev, SENSOR_CHAN_FORCE,
+	  SENSOR_ATTR_CALIBRATION, &calib_attri) != 0) { LOG_ERR("Cannot
+	  configure the calibration."); return 0;
+	  }
+      */
+
 	/* Initialize Load switch */
 	if (gpio_is_ready_dt(&power_sw)) {
 		int err;

@@ -20,6 +20,22 @@
 		zephyr,code-partition = &code_partition;
 		zephyr,ieee802154 = &ieee802154;
 	};
+	
+    interrupt-pins {
+        compatible = "gpio-keys";
+        touch_irq: touch_irq {
+            gpios = <&gpio0 4 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+            label = "Interrupt PIN for touch";
+            zephyr,code = <INPUT_KEY_0>;
+        };
+    };
+
+    control-pins {
+        compatible = "gpio-leds";
+        power_sw: tck108af {
+            gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+        };
+    };
 
 	leds {
 		compatible = "gpio-leds";
@@ -35,30 +51,33 @@
 			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
 			label = "Blue LED";
 		};
+        led4: led4 {
+            gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+        };
 	};
 
 	arduino_header: connector {
 		#compatible = "arduino-header-r3";
-    compatible = "seeed,xiao-gpio";
+		compatible = "seeed,xiao-gpio";
 		#gpio-cells = <2>;
 		gpio-map-mask = <0xffffffff 0xffffffc0>;
 		gpio-map-pass-thru = <0 0x3f>;
 		gpio-map =
-			   <0 0 &gpio0 2 0>, /* D0 */
-			   <1 0 &gpio0 3 0>, /* D1 */
-			   <2 0 &gpio0 28 0>, /* D2 */
-			   <3 0 &gpio0 29 0>, /* D3 */
-			   <4 0 &gpio0 4 0>, /* D4 */
-			   <5 0 &gpio0 5 0>, /* D5 */
-			   <6 0 &gpio1 11 0>, /* D6 */
-			   <7 0 &gpio1 12 0>, /* D7 */
-			   <8 0 &gpio1 13 0>, /* D8 */
-			   <9 0 &gpio1 14 0>, /* D9 */
-			   <10 0 &gpio1 15 0>, /* D10 */
-         /* Fix this hack */
-         <11 0 &gpio0 8 0>,
-         <15 0 &gpio0 8 0>,
-         <16 0 &gpio0 8 0>;
+			<0 0 &gpio0 2 0>, /* D0 */
+			<1 0 &gpio0 3 0>, /* D1 */
+			<2 0 &gpio0 28 0>, /* D2 */
+			<3 0 &gpio0 29 0>, /* D3 */
+			<4 0 &gpio0 4 0>, /* D4 */
+			<5 0 &gpio0 5 0>, /* D5 */
+			<6 0 &gpio1 11 0>, /* D6 */
+			<7 0 &gpio1 12 0>, /* D7 */
+			<8 0 &gpio1 13 0>, /* D8 */
+			<9 0 &gpio1 14 0>, /* D9 */
+			<10 0 &gpio1 15 0>, /* D10 */
+			/* Fix this hack */
+			<11 0 &gpio0 8 0>,
+			<15 0 &gpio0 8 0>,
+			<16 0 &gpio0 8 0>;
 	};
 
 	adafruit_2_8_tft_touch_v2_mipi_dbi {
@@ -109,15 +128,15 @@ arduino_i2c: &i2c0 {
 	pinctrl-1 = <&i2c0_sleep>;
 	pinctrl-names = "default", "sleep";
 
-  nau7802: nau7802_loadcell@2A {
+nau7802: nau7802_loadcell@2A {
     compatible = "nuvoton,nau7802_loadcell";
     reg = <0x2A>;
     drdy-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
     conversions-per-second = <320>; //SPS
     gain = <64>;
-  };
+};
 
-	ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
+ft5336_adafruit_2_8_tft_touch_v2: ft5336@38 {
 		/* Uncomment if IRQ line is available (requires to solder jumper) */
 		int-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
 	};
