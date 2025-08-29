@@ -10,3 +10,4 @@ nrf/
 nrfxlib/
 test/
 tools/
+.vscode/

@@ -46,10 +46,10 @@ static void lv_ui_decrement_ratio_event_cb(lv_event_t *e);
 const char *bad_jokes[] = {
 	"How did the hipster burn his tongue?\nHe drank his coffee before it "
 	"was cool.",
-	"What’s a barista’s favorite exercise?\nThe French press!",
+	"What's a barista's favorite exercise?\nThe French press!",
 	"Why do coffee beans never get a break?\nBecause they're always "
 	"getting roasted!",
-	"Espresso may not solve all your problems.\nBut it's worth a shot!",
+	"Espresso may not solve all problems.\nBut it's worth a shot!",
 	"I told my coffee it needs to chill.\nNow it's iced coffee.",
 	"How do coffee beans say goodbye?\nSee you latte!"};
 
